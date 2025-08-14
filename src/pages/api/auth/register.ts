@@ -1,6 +1,6 @@
 // pages/api/auth/register.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '@/src/lib/prisma';
+import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

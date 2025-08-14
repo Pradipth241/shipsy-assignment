@@ -1,6 +1,6 @@
 // pages/api/auth/login.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '@/src/lib/prisma';
+import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
