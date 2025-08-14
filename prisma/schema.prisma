@@ -1,0 +1,38 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  shipments Shipment[]
+}
+
+enum ShipmentStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+}
+
+model Shipment {
+  id                String   @id @default(cuid())
+  description       String
+  status            ShipmentStatus @default(PENDING)
+  isFragile         Boolean  @default(false)
+  weightInKg        Float
+  volumeCubicMeters Float
+  shippingCost      Float
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  owner   User   @relation(fields: [ownerId], references: [id])
+  ownerId String
+}
