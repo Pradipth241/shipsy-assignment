@@ -1,4 +1,5 @@
 // src/pages/edit/[id].tsx
+import { ShipmentFormData } from '@/types/globals';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/context/AuthContext';
@@ -6,33 +7,7 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import toast from 'react-hot-toast';
 
-// Define the specific type for all form fields to satisfy TypeScript
-type ShipmentFormData = {
-  shipperName: string;
-  shipperPhone: string;
-  shipperAddress: string;
-  shipperEmail: string;
-  receiverName: string;
-  receiverPhone: string;
-  receiverAddress: string;
-  receiverEmail: string;
-  origin: string;
-  destination: string;
-  carrier: string;
-  product: string;
-  weight: number;
-  ratePerKg: number;
-  packages: number;
-  quantity: number;
-  typeOfShipment: string;
-  paymentMode: string;
-  mode: string;
-  status: string;
-  pickupDate: string;
-  expectedDeliveryDate: string;
-  isFragile: boolean;
-  comments?: string;
-};
+
 
 export default function EditShipmentPage() {
   const { register, handleSubmit, watch, reset } = useForm<ShipmentFormData>();
