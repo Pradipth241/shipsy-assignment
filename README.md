@@ -1,40 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+Of course. Here is a complete, professional README.md file for your project.
 
-## Getting Started
+Copy the text below and paste it into your README.md file in the root of your project.
 
-First, run the development server:
+Shipsy - Shipment Management Portal
+A full-stack web application for managing logistics, built for the Shipsy Software Engineer Intern assignment. It allows authenticated users to perform complete CRUD operations on shipments, track their history, search for specific records, and view the interface in a light or dark theme.
 
-```bash
+Live Demo URL: https://shipsy-assignment-1.vercel.app/
+
+Features
+✅ Full User Authentication: Secure registration and login with JWT.
+
+✅ Comprehensive CRUD: Create, read, update, and delete detailed shipment records.
+
+✅ Shipment Tracking: Each shipment has a history log that updates with status changes.
+
+✅ Search Functionality: Users can look up specific shipments by their full ID to view details and history, complete with a dynamically generated barcode.
+
+✅ Professional UI/UX: A clean, responsive interface with a dark theme that respects the user's system preferences.
+
+✅ Modern Tech Stack: Built with Next.js, TypeScript, Prisma, and PostgreSQL.
+
+Core Assignment Requirements Checklist
+✅ 
+
+Text field: Implemented for fields like shipperName, origin, product, etc. 
+
+✅ 
+
+Enum (dropdown selection): Implemented for typeOfShipment, paymentMode, and status. 
+
+✅ 
+
+Boolean field: Implemented as the isFragile checkbox. 
+
+✅ 
+
+Calculated field: The totalFreight is automatically calculated from two inputs: weight * ratePerKg. 
+
+Tech Stack
+Framework: Next.js (with Pages Router)
+
+Language: TypeScript
+
+Database: PostgreSQL (hosted on Supabase)
+
+ORM: Prisma
+
+Styling: Tailwind CSS
+
+UI Components: Headless UI
+
+Deployment: Vercel
+
+Local Setup
+To run this project locally, follow these steps:
+
+Clone the repository:
+
+Bash
+
+git clone https://github.com/Pradipth241/shipsy-assignment.git
+Navigate to the project directory:
+
+Bash
+
+cd shipsy-assignment
+Install dependencies:
+
+Bash
+
+npm install
+Set up environment variables:
+
+Create a new file named .env in the root of the project.
+
+Add the following variables, replacing the placeholder values:
+
+Code snippet
+
+DATABASE_URL="your_postgresql_connection_string_from_supabase"
+JWT_SECRET="your_super_secret_key_for_json_web_tokens"
+Run database migrations:
+This command will set up your local database schema.
+
+Bash
+
+npx prisma migrate dev
+Start the development server:
+
+Bash
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+The application will be available at http://localhost:3000.
