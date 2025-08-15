@@ -53,6 +53,7 @@ model Shipment {
   // Shipment Details
   typeOfShipment      ShipmentType
   weight              Float
+  isFragile           Boolean  @default(false)
   packages            Int
   product             String
   quantity            Int

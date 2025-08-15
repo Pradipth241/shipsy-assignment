@@ -66,19 +66,21 @@ export default function SearchPage() {
       </div>
 
       <form onSubmit={handleSearch} className="flex gap-2 mb-8">
+        {/* --- THIS IS THE ONLY ELEMENT WITH DARK MODE STYLES --- */}
         <input
           type="text"
           value={shipmentId}
           onChange={(e) => setShipmentId(e.target.value)}
           placeholder="Enter Shipment ID"
-          className="w-full max-w-sm p-2 border border-slate-300 rounded-md shadow-sm"
+          className="w-full max-w-sm p-2 border border-slate-300 rounded-md shadow-sm 
+                     dark:bg-slate-800 dark:border-slate-600 dark:text-white"
         />
         <button type="submit" disabled={isLoading} className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold shadow-sm hover:bg-indigo-700 disabled:bg-indigo-300">
           {isLoading ? 'Searching...' : 'Search'}
         </button>
       </form>
 
-      {/* Results Section */}
+      {/* Results Section (remains in light mode) */}
       {shipment && (
         <div className="bg-white p-6 rounded-lg shadow-sm space-y-6">
           <div className="flex justify-between items-center">
@@ -89,36 +91,37 @@ export default function SearchPage() {
             <Barcode value={shipment.id} height={50} displayValue={false} />
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-t pt-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-slate-200 pt-4">
             <div><p className="text-xs text-slate-500">Origin</p><p className="font-semibold text-slate-800">{shipment.origin}</p></div>
             <div><p className="text-xs text-slate-500">Destination</p><p className="font-semibold text-slate-800">{shipment.destination}</p></div>
             <div><p className="text-xs text-slate-500">Status</p><p className="font-semibold text-slate-800">{shipment.status}</p></div>
             <div><p className="text-xs text-slate-500">Product</p><p className="font-semibold text-slate-800">{shipment.product}</p></div>
-            {/* Add more fields as needed */}
           </div>
 
-          <div className="border-t pt-4">
+          <div className="border-t border-slate-200 pt-4">
             <h3 className="text-lg font-semibold text-slate-800 mb-2">Shipment History</h3>
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50">
-                <tr>
-                  {['Date', 'Time', 'Location', 'Status', 'Updated By'].map(header => (
-                    <th key={header} className="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase">{header}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-slate-200">
-                {shipment.history.map(entry => (
-                  <tr key={entry.timestamp}>
-                    <td className="px-4 py-2 text-sm text-slate-600">{new Date(entry.timestamp).toLocaleDateString()}</td>
-                    <td className="px-4 py-2 text-sm text-slate-600">{new Date(entry.timestamp).toLocaleTimeString()}</td>
-                    <td className="px-4 py-2 text-sm text-slate-800">{entry.location}</td>
-                    <td className="px-4 py-2 text-sm text-slate-800">{entry.status}</td>
-                    <td className="px-4 py-2 text-sm text-slate-600">{entry.updatedBy}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200">
+                <thead className="bg-slate-50">
+                    <tr>
+                    {['Date', 'Time', 'Location', 'Status', 'Updated By'].map(header => (
+                        <th key={header} className="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase">{header}</th>
+                    ))}
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-slate-200">
+                    {shipment.history.map(entry => (
+                    <tr key={entry.timestamp}>
+                        <td className="px-4 py-2 text-sm text-slate-600">{new Date(entry.timestamp).toLocaleDateString()}</td>
+                        <td className="px-4 py-2 text-sm text-slate-600">{new Date(entry.timestamp).toLocaleTimeString()}</td>
+                        <td className="px-4 py-2 text-sm text-slate-800">{entry.location}</td>
+                        <td className="px-4 py-2 text-sm text-slate-800">{entry.status}</td>
+                        <td className="px-4 py-2 text-sm text-slate-600">{entry.updatedBy}</td>
+                    </tr>
+                    ))}
+                </tbody>
+                </table>
+            </div>
           </div>
         </div>
       )}
