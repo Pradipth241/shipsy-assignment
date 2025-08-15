@@ -1,71 +1,40 @@
-# Shipsy - Shipment Management Portal
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
 
-A full-stack web application for managing logistics, built for the Shipsy Software Engineer Intern assignment. It allows authenticated users to perform complete CRUD operations on shipments, track their history, search for specific records, and view the interface in a light or dark theme.
+## Getting Started
 
-**Live Demo URL:** [https://shipsy-assignment-1.vercel.app/](https://shipsy-assignment-1.vercel.app/)
+First, run the development server:
 
-*(Optional but highly recommended: Create a short GIF of your application in action and replace the line below)*
-`![Project Demo GIF](link-to-your-demo.gif)`
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
----
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Features
+You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
 
-- ✅ **Full User Authentication:** Secure registration and login with JWT.
-- ✅ **Comprehensive CRUD:** Create, read, update, and delete detailed shipment records.
-- ✅ **Shipment Tracking:** Each shipment has a history log that updates with status changes.
-- ✅ **Search Functionality:** Users can look up specific shipments by their full ID to view details and history, complete with a dynamically generated barcode.
-- ✅ **Professional UI/UX:** A clean, responsive interface with a dark theme that respects the user's system preferences.
-- ✅ **Modern Tech Stack:** Built with Next.js, TypeScript, Prisma, and PostgreSQL.
+[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
 
-## Core Assignment Requirements Checklist
+The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
 
-- ✅ **Text field:** Implemented for fields like `shipperName`, `origin`, `product`, etc.
-- ✅ **Enum (dropdown selection):** Implemented for `typeOfShipment`, `paymentMode`, and `status`.
-- ✅ **Boolean field:** Implemented as the `isFragile` checkbox.
-- ✅ **Calculated field:** The `totalFreight` is automatically calculated from two inputs: `weight * ratePerKg`.
+This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Tech Stack
+## Learn More
 
-- **Framework:** Next.js (with Pages Router)
-- **Language:** TypeScript
-- **Database:** PostgreSQL (hosted on Supabase)
-- **ORM:** Prisma
-- **Styling:** Tailwind CSS
-- **UI Components:** Headless UI
-- **Deployment:** Vercel
+To learn more about Next.js, take a look at the following resources:
 
-## Local Setup
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
 
-To run this project locally, follow these steps:
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/Pradipth241/shipsy-assignment.git](https://github.com/Pradipth241/shipsy-assignment.git)
-    ```
-2.  **Navigate to the project directory:**
-    ```bash
-    cd shipsy-assignment
-    ```
-3.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-4.  **Set up environment variables:**
-    * Create a new file named `.env` in the root of the project.
-    * Add the following variables, replacing the placeholder values:
-        ```env
-        DATABASE_URL="your_postgresql_connection_string_from_supabase"
-        JWT_SECRET="your_super_secret_key_for_json_web_tokens"
-        ```
-5.  **Run database migrations:**
-    This command will set up your local database schema.
-    ```bash
-    npx prisma migrate dev
-    ```
-6.  **Start the development server:**
-    ```bash
-    npm run dev
-    ```
+## Deploy on Vercel
 
-The application will be available at `http://localhost:3000`.
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
