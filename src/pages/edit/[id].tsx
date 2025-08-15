@@ -6,8 +6,36 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import toast from 'react-hot-toast';
 
+// Define the specific type for all form fields to satisfy TypeScript
+type ShipmentFormData = {
+  shipperName: string;
+  shipperPhone: string;
+  shipperAddress: string;
+  shipperEmail: string;
+  receiverName: string;
+  receiverPhone: string;
+  receiverAddress: string;
+  receiverEmail: string;
+  origin: string;
+  destination: string;
+  carrier: string;
+  product: string;
+  weight: number;
+  ratePerKg: number;
+  packages: number;
+  quantity: number;
+  typeOfShipment: string;
+  paymentMode: string;
+  mode: string;
+  status: string;
+  pickupDate: string;
+  expectedDeliveryDate: string;
+  isFragile: boolean;
+  comments?: string;
+};
+
 export default function EditShipmentPage() {
-  const { register, handleSubmit, watch, reset } = useForm();
+  const { register, handleSubmit, watch, reset } = useForm<ShipmentFormData>();
   const { token } = useAuth();
   const router = useRouter();
   const { id } = router.query;
@@ -38,7 +66,7 @@ export default function EditShipmentPage() {
   const ratePerKg = watch('ratePerKg', 0);
   const totalFreight = (Number(weight) || 0) * (Number(ratePerKg) || 0);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: ShipmentFormData) => {
     const apiCall = async () => {
       const response = await fetch(`/api/shipments/${id}`, {
         method: 'PUT',
@@ -48,10 +76,10 @@ export default function EditShipmentPage() {
         },
         body: JSON.stringify({
             ...data,
-            weight: parseFloat(data.weight),
-            packages: parseInt(data.packages, 10),
-            quantity: parseInt(data.quantity, 10),
-            ratePerKg: parseFloat(data.ratePerKg),
+            weight: parseFloat(String(data.weight)),
+            packages: parseInt(String(data.packages), 10),
+            quantity: parseInt(String(data.quantity), 10),
+            ratePerKg: parseFloat(String(data.ratePerKg)),
             totalFreight: totalFreight,
             pickupDate: new Date(data.pickupDate),
             expectedDeliveryDate: new Date(data.expectedDeliveryDate),
@@ -140,15 +168,12 @@ export default function EditShipmentPage() {
                 <input {...register('expectedDeliveryDate', { required: true })} type="date" className="w-full p-2 border rounded bg-transparent border-slate-300 dark:border-slate-600" />
               </div>
            </div>
-
-           {/* --- THIS IS THE NEW CHECKBOX --- */}
            <div className="mt-6">
              <label className="flex items-center">
                <input type="checkbox" {...register('isFragile')} className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
                <span className="ml-2 text-sm text-slate-700 dark:text-slate-300">This shipment is fragile</span>
              </label>
            </div>
-           
            <div className="mt-4">
               <p className="text-slate-600 dark:text-slate-300">Total Freight (Auto-Calculated): <span className="font-bold text-slate-800 dark:text-slate-100">${totalFreight.toFixed(2)}</span></p>
            </div>

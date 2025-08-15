@@ -1,18 +1,14 @@
 // src/lib/prisma.ts
 import { PrismaClient } from '@prisma/client';
 
-let prisma: PrismaClient;
-
-if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient();
-} else {
-  // @ts-ignore
-  if (!global.prisma) {
-    // @ts-ignore
-    global.prisma = new PrismaClient();
-  }
-  // @ts-ignore
-  prisma = global.prisma;
+// This prevents TypeScript errors when using the global object in development
+declare global {
+  // We use `var` here to declare a global variable that can be accessed anywhere.
+  // eslint-disable-next-line no-var
+  var prisma: PrismaClient | undefined;
 }
 
-export default prisma;
+const client = globalThis.prisma || new PrismaClient();
+if (process.env.NODE_ENV !== 'production') globalThis.prisma = client;
+
+export default client;
