@@ -2,6 +2,7 @@
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
+import { FieldValues } from 'react-hook-form';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -10,7 +11,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FieldValues) => {
     setIsSubmitting(true);
     setError('');
     try {

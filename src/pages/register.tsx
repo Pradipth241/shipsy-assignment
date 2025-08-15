@@ -2,6 +2,7 @@
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { FieldValues } from 'react-hook-form';
 import Link from 'next/link';
 
 export default function RegisterPage() {
@@ -10,7 +11,7 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FieldValues) => {
     setIsSubmitting(true);
     setError('');
     try {
