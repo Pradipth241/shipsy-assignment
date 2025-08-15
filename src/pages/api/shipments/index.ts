@@ -1,4 +1,4 @@
-// pages/api/shipments/index.ts
+// src/pages/api/shipments/index.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import { getUserIdFromToken } from '@/lib/auth';
@@ -12,23 +12,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   switch (req.method) {
     case 'POST':
-      // Create a new shipment
       try {
-        const { origin, destination, isFragile, weightInKg, ratePerKg, status } = req.body;
-        
-        // --- UPDATED CALCULATED FIELD ---
-        const shippingCost = Number(weightInKg) * Number(ratePerKg);
-
+        const data = req.body;
         const newShipment = await prisma.shipment.create({
           data: {
-            origin,
-            destination,
-            isFragile,
-            weightInKg: Number(weightInKg),
-            ratePerKg: Number(ratePerKg),
-            status,
-            shippingCost,
+            ...data,
             ownerId: userId,
+            history: {
+              create: {
+                location: data.origin,
+                status: 'PENDING',
+                updatedBy: 'System',
+                remarks: 'Shipment created.',
+              },
+            },
           },
         });
         return res.status(201).json(newShipment);
@@ -38,41 +35,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
     case 'GET':
-      // Get a list of shipments with pagination and filtering
       try {
-        const page = Number(req.query.page) || 1;
-        const limit = Number(req.query.limit) || 5;
-        const skip = (page - 1) * limit;
-        
-        // --- NEW FILTERING LOGIC ---
-        const statusFilter = req.query.status as string | undefined;
-        const fragileFilter = req.query.isFragile as string | undefined;
-
-        const whereClause: any = { ownerId: userId };
-        if (statusFilter && ['PENDING', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED'].includes(statusFilter)) {
-            whereClause.status = statusFilter;
-        }
-        if (fragileFilter) {
-            whereClause.isFragile = fragileFilter === 'true';
-        }
-
         const shipments = await prisma.shipment.findMany({
-          where: whereClause,
-          skip: skip,
-          take: limit,
+          where: { ownerId: userId },
           orderBy: { createdAt: 'desc' },
         });
-        const totalShipments = await prisma.shipment.count({ where: whereClause });
-
-        return res.status(200).json({
-          data: shipments,
-          pagination: {
-            total: totalShipments,
-            page,
-            limit,
-            totalPages: Math.ceil(totalShipments / limit),
-          },
-        });
+        return res.status(200).json({ data: shipments });
       } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Error fetching shipments' });
@@ -80,6 +48,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     default:
       res.setHeader('Allow', ['GET', 'POST']);
-      return res.status(405).end(`Method ${req.method} Not Allowed`);
+      res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

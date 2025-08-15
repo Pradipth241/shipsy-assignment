@@ -1,200 +1,187 @@
-// pages/dashboard.tsx
-import { useEffect, useState } from 'react';
+// src/pages/dashboard.tsx
+import { useEffect, useState, useCallback } from 'react'; // Add useCallback
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import Layout from '@/components/Layout';
-import ShipmentModal from '@/components/ShipmentModal';
-import toast from 'react-hot-toast'; // Import toast
-import { ArchiveBoxXMarkIcon } from '@heroicons/react/24/outline'; // Import icon
+import toast from 'react-hot-toast';
+import { Menu, Transition } from '@headlessui/react';
+import { EllipsisVerticalIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 
-
-// ... (Keep your Shipment interface)
+// ... (Shipment interface remains the same)
 interface Shipment {
   id: string;
   origin: string;
   destination: string;
-  status: 'PENDING' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED';
-  isFragile: boolean;
-  shippingCost: number;
-  weightInKg: number;
-  ratePerKg: number;
+  status: string;
+  carrier: string;
+  product: string;
   createdAt: string;
 }
 
 export default function Dashboard() {
-  // ... (Keep all your existing state hooks)
   const { token, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [shipments, setShipments] = useState<Shipment[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [filters, setFilters] = useState({ status: '', isFragile: '' });
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingShipment, setEditingShipment] = useState<Shipment | null>(null);
 
-  const fetchShipments = async () => {
-    // ... (Keep the existing fetchShipments logic)
-    if (!token) return;
-    const query = new URLSearchParams({ page: String(page), limit: '5', ...filters }).toString();
+  // --- THIS IS THE FIX ---
+  // 1. Moved fetchShipments out of useEffect and wrapped in useCallback
+  const fetchShipments = useCallback(async () => {
+    if (!token || !isAuthenticated) return;
     try {
-      const res = await fetch(`/api/shipments?${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (res.ok) {
-        const { data, pagination } = await res.json();
-        setShipments(data);
-        setTotalPages(pagination.totalPages);
-      } else { toast.error("Failed to fetch shipments."); }
-    } catch (error) { toast.error("An error occurred while fetching."); }
-  };
-
-  // ... (Keep the useEffect hooks)
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) router.push('/login');
-  }, [isAuthenticated, isLoading, router]);
-
-  useEffect(() => {
-    if (isAuthenticated) fetchShipments();
-  }, [isAuthenticated, token, page, filters]);
-
-  // ... (Keep handleFilterChange, handleOpenCreateModal, handleOpenEditModal)
-  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setPage(1);
-    setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-  const handleOpenCreateModal = () => {
-    setEditingShipment(null);
-    setIsModalOpen(true);
-  };
-  const handleOpenEditModal = (shipment: Shipment) => {
-    setEditingShipment(shipment);
-    setIsModalOpen(true);
-  };
-
-  // UPDATE DELETE HANDLER TO USE TOAST
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this shipment?')) {
-      const promise = fetch(`/api/shipments/${id}`, {
-        method: 'DELETE',
+      const res = await fetch(`/api/shipments`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
-      
-      toast.promise(promise, {
-        loading: 'Deleting shipment...',
-        success: () => {
-          fetchShipments(); // Refresh list on success
-          return 'Shipment deleted successfully!';
-        },
-        error: 'Failed to delete shipment.',
-      });
+      if (res.ok) {
+        const { data } = await res.json();
+        setShipments(data);
+      } else {
+        toast.error("Failed to fetch shipments.");
+      }
+    } catch (error) {
+      toast.error("An error occurred while fetching shipments.");
+    }
+  }, [token, isAuthenticated]); // Dependencies for the function
+
+  // 2. useEffect now calls the function from the outer scope
+  useEffect(() => {
+    if (isAuthenticated && router.isReady) {
+      fetchShipments();
+    }
+  }, [isAuthenticated, router.isReady, fetchShipments]);
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this shipment?')) {
+        const promise = fetch(`/api/shipments/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        toast.promise(promise, {
+            loading: 'Deleting...',
+            success: (res) => {
+                if(!res.ok) throw new Error("Failed to delete.");
+                fetchShipments(); // This will now work correctly
+                return "Shipment deleted!";
+            },
+            error: "Failed to delete shipment."
+        });
     }
   };
-  
-  // ... (Keep the isLoading check)
+  // ... (the rest of the component is the same)
+  const handleCopyId = (id: string) => {
+    navigator.clipboard.writeText(id);
+    toast.success("Shipment ID copied!");
+  };
+
   if (isLoading || !isAuthenticated) {
-     return (
-        <div className="flex h-screen items-center justify-center">
-            <p className="text-slate-600">Loading application...</p>
-        </div>
-     )
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-slate-600">Loading application...</p>
+      </div>
+    );
   }
 
-  // RETURN THE NEW JSX
   return (
-    <>
-      <Layout>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Shipments Dashboard</h1>
-            <p className="mt-1 text-sm text-slate-600">View, create, and manage all your shipments.</p>
-          </div>
-          <button onClick={handleOpenCreateModal} className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold shadow-sm hover:bg-indigo-700 transition-colors">
-            Add Shipment
-          </button>
+    <Layout>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Shipments</h1>
+          <p className="mt-1 text-sm text-slate-600">A summary of all your recent shipments.</p>
         </div>
-        
-        <div className="flex gap-4 mb-4">
-          <select name="status" value={filters.status} onChange={handleFilterChange} className="p-2 border border-slate-300 rounded-md shadow-sm bg-white focus:ring-2 focus:ring-indigo-500">
-            <option value="">All Statuses</option>
-            <option value="PENDING">Pending</option>
-            <option value="IN_TRANSIT">In Transit</option>
-            <option value="DELIVERED">Delivered</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
-          <select name="isFragile" value={filters.isFragile} onChange={handleFilterChange} className="p-2 border border-slate-300 rounded-md shadow-sm bg-white focus:ring-2 focus:ring-indigo-500">
-            <option value="">Any Fragility</option>
-            <option value="true">Fragile Only</option>
-            <option value="false">Not Fragile</option>
-          </select>
+        <div className="flex gap-2">
+            <Link href="/add-shipment" className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold shadow-sm hover:bg-indigo-700 transition-colors">
+              Add Shipment
+            </Link>
+            <Link href="/search" className="bg-white text-slate-700 px-4 py-2 rounded-lg font-semibold border border-slate-300 hover:bg-slate-50 transition-colors">
+              Search
+            </Link>
         </div>
+      </div>
 
-        <div className="bg-white shadow-md sm:rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50">
+      <div className="bg-white shadow-md sm:rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead className="bg-slate-50">
+              <tr>
+                {['Shipment ID', 'Route', 'Product', 'Status', 'Created', ''].map(header => (
+                  <th key={header} className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">{header}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-slate-200">
+              {shipments.length === 0 ? (
                 <tr>
-                  {['Shipment ID', 'Origin → Destination', 'Status', 'Cost', 'Created', ''].map(header => (
-                    <th key={header} className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">{header}</th>
-                  ))}
+                  <td colSpan={6} className="text-center py-16">
+                    <h3 className="text-sm font-semibold text-slate-800">No shipments yet</h3>
+                    <p className="mt-1 text-sm text-slate-500">Get started by adding a new shipment.</p>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-slate-200">
-                {shipments.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-16">
-                      <ArchiveBoxXMarkIcon className="mx-auto h-12 w-12 text-slate-400" />
-                      <h3 className="mt-2 text-sm font-semibold text-slate-800">No shipments found</h3>
-                      <p className="mt-1 text-sm text-slate-500">Get started by creating a new shipment.</p>
+              ) : (
+                shipments.map((shipment) => (
+                  <tr key={shipment.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">
+                      <div className="flex items-center gap-2">
+                        <span>{shipment.id}</span>
+                        <button onClick={() => handleCopyId(shipment.id)} className="text-slate-400 hover:text-indigo-600">
+                          <DocumentDuplicateIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 font-semibold">{shipment.origin} → {shipment.destination}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{shipment.product}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-800">
+                        {shipment.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{new Date(shipment.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <Menu as="div" className="relative inline-block text-left">
+                        <Menu.Button className="p-1 text-slate-500 hover:text-slate-800 rounded-full hover:bg-slate-100">
+                          <EllipsisVerticalIcon className="h-5 w-5" />
+                        </Menu.Button>
+                        <Transition
+                          enter="transition ease-out duration-100"
+                          enterFrom="transform opacity-0 scale-95"
+                          enterTo="transform opacity-100 scale-100"
+                          leave="transition ease-in duration-75"
+                          leaveFrom="transform opacity-100 scale-100"
+                          leaveTo="transform opacity-0 scale-95"
+                        >
+                          <Menu.Items className="absolute right-0 mt-2 w-40 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                            <div className="py-1">
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    // onClick={() => handleOpenEditModal(shipment)} // We will create the edit page later
+                                    className={`${active ? 'bg-slate-100 text-slate-900' : 'text-slate-700'} group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                                  >
+                                    Edit
+                                  </button>
+                                )}
+                              </Menu.Item>
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    onClick={() => handleDelete(shipment.id)}
+                                    className={`${active ? 'bg-red-50 text-red-900' : 'text-red-700'} group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                                  >
+                                    Delete Shipment
+                                  </button>
+                                )}
+                              </Menu.Item>
+                            </div>
+                          </Menu.Items>
+                        </Transition>
+                      </Menu>
                     </td>
                   </tr>
-                ) : (
-                  shipments.map((shipment) => (
-                    <tr key={shipment.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">{shipment.id.slice(-8).toUpperCase()}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 font-semibold">
-                          {shipment.origin} → {shipment.destination}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            ${shipment.status === 'DELIVERED' ? 'bg-green-100 text-green-800' : 
-                            shipment.status === 'IN_TRANSIT' ? 'bg-yellow-100 text-yellow-800' :
-                            shipment.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-800'}`}>
-                            {shipment.status.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800 font-semibold">${shipment.shippingCost.toFixed(2)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{new Date(shipment.createdAt).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onClick={() => handleOpenEditModal(shipment)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
-                        <button onClick={() => handleDelete(shipment.id)} className="text-red-600 hover:text-red-900 ml-4">Delete</button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-        
-        {shipments.length > 0 && (
-          <div className="mt-6 flex justify-between items-center">
-            <p className="text-sm text-slate-700">Page {page} of {totalPages}</p>
-            <div>
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="bg-white px-4 py-2 border rounded-md text-sm font-semibold mr-2 disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
-              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="bg-white px-4 py-2 border rounded-md text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
-            </div>
-          </div>
-        )}
-      </Layout>
-      
-      <ShipmentModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={() => {
-            // Use toast on success from modal
-            toast.success(editingShipment ? 'Shipment updated successfully!' : 'Shipment created successfully!');
-            fetchShipments();
-        }}
-        shipmentToEdit={editingShipment}
-      />
-    </>
+      </div>
+    </Layout>
   );
 }

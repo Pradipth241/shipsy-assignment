@@ -1,4 +1,4 @@
-// pages/api/auth/login.ts
+// src/pages/api/auth/login.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, {
-      expiresIn: '1d', // Token expires in 1 day
+      expiresIn: '1d',
     });
 
     return res.status(200).json({ token });

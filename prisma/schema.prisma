@@ -16,30 +16,76 @@ model User {
   shipments Shipment[]
 }
 
-enum ShipmentStatus {
-  PENDING
-  IN_TRANSIT
-  DELIVERED
-  CANCELLED // Added new status
+// Enums for dropdowns
+enum ShipmentType {
+  DOOR_TO_DOOR
+  DOOR_TO_PORT
+  PORT_TO_DOOR
+}
+
+enum PaymentMode {
+  PREPAID
+  POSTPAID
+  CASH_ON_DELIVERY
+}
+
+enum ShipmentMode {
+  AIR
+  OCEAN
+  LAND
 }
 
 model Shipment {
-  id                String   @id @default(cuid())
+  id                  String   @id @default(cuid())
   
-  // New and updated fields
-  origin            String   // New
-  destination       String   // New
-  status            ShipmentStatus @default(PENDING)
-  isFragile         Boolean  @default(false)
-  weightInKg        Float
-  ratePerKg         Float    // New
-  shippingCost      Float    // Calculated field
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  // Shipper Details
+  shipperName         String
+  shipperPhone        String
+  shipperAddress      String
+  shipperEmail        String
 
-  owner   User   @relation(fields: [ownerId], references: [id])
-  ownerId String
+  // Receiver Details
+  receiverName        String
+  receiverPhone       String
+  receiverAddress     String
+  receiverEmail       String
+
+  // Shipment Details
+  typeOfShipment      ShipmentType
+  weight              Float
+  packages            Int
+  product             String
+  quantity            Int
+  paymentMode         PaymentMode
+  totalFreight        Float // Calculated field
+  ratePerKg           Float
+  carrier             String
+  mode                ShipmentMode
+  origin              String
+  destination         String
+  pickupDate          DateTime
+  expectedDeliveryDate DateTime
+  comments            String?
+
+  // Tracking & Status
+  status              String @default("PENDING")
   
-  // Remove the old 'description' and 'volumeCubicMeters' fields
+  // Relations
+  history             ShipmentHistory[]
+  owner               User   @relation(fields: [ownerId], references: [id])
+  ownerId             String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model ShipmentHistory {
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+  location    String
+  status      String
+  updatedBy   String
+  remarks     String?
+  
+  shipment    Shipment @relation(fields: [shipmentId], references: [id])
+  shipmentId  String
 }
