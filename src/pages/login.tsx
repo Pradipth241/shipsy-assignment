@@ -1,8 +1,7 @@
-// pages/login.tsx
-import { useForm } from 'react-hook-form';
+// src/pages/login.tsx
+import { useForm, FieldValues } from 'react-hook-form'; // Import FieldValues
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
-import { FieldValues } from 'react-hook-form';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -11,6 +10,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // FIX 1: Changed 'data: any' to 'data: FieldValues'
   const onSubmit = async (data: FieldValues) => {
     setIsSubmitting(true);
     setError('');
@@ -28,11 +28,11 @@ export default function LoginPage() {
 
       const { token } = await res.json();
       login(token);
-    } catch (err: any) {
-      setError(err.message);
-      setIsSubmitting(false); // Make sure to stop submitting on error
+    } catch (err: unknown) { // FIX 2: Changed 'err: any' to 'err: unknown' for better type safety
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
+      setIsSubmitting(false);
     }
-    // No need to set isSubmitting to false on success, as the page will redirect
   };
 
   return (
@@ -53,8 +53,9 @@ export default function LoginPage() {
             {isSubmitting ? 'Logging in...' : 'Login'}
           </button>
         </form>
+        {/* FIX 3: Changed "Don't" to "Don&apos;t" to fix unescaped entity error */}
         <p className="text-center mt-4 text-sm">
-          Don't have an account? <Link href="/register" className="text-blue-500 hover:underline">Register</Link>
+          Don&apos;t have an account? <Link href="/register" className="text-blue-500 hover:underline">Register</Link>
         </p>
       </div>
     </div>
