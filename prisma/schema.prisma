@@ -20,19 +20,26 @@ enum ShipmentStatus {
   PENDING
   IN_TRANSIT
   DELIVERED
+  CANCELLED // Added new status
 }
 
 model Shipment {
   id                String   @id @default(cuid())
-  description       String
+  
+  // New and updated fields
+  origin            String   // New
+  destination       String   // New
   status            ShipmentStatus @default(PENDING)
   isFragile         Boolean  @default(false)
   weightInKg        Float
-  volumeCubicMeters Float
-  shippingCost      Float
+  ratePerKg         Float    // New
+  shippingCost      Float    // Calculated field
+  
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   owner   User   @relation(fields: [ownerId], references: [id])
   ownerId String
+  
+  // Remove the old 'description' and 'volumeCubicMeters' fields
 }

@@ -14,17 +14,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     case 'POST':
       // Create a new shipment
       try {
-        const { description, isFragile, weightInKg, volumeCubicMeters, status } = req.body;
-
-        // --- CALCULATED FIELD ---
-        const shippingCost = (weightInKg * 1.5) + (volumeCubicMeters * 3);
+        const { origin, destination, isFragile, weightInKg, ratePerKg, status } = req.body;
+        
+        // --- UPDATED CALCULATED FIELD ---
+        const shippingCost = Number(weightInKg) * Number(ratePerKg);
 
         const newShipment = await prisma.shipment.create({
           data: {
-            description,
+            origin,
+            destination,
             isFragile,
-            weightInKg,
-            volumeCubicMeters,
+            weightInKg: Number(weightInKg),
+            ratePerKg: Number(ratePerKg),
             status,
             shippingCost,
             ownerId: userId,
@@ -32,6 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
         return res.status(201).json(newShipment);
       } catch (error) {
+        console.error(error);
         return res.status(500).json({ message: 'Error creating shipment' });
       }
 
@@ -41,11 +43,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 5;
         const skip = (page - 1) * limit;
+        
+        // --- NEW FILTERING LOGIC ---
         const statusFilter = req.query.status as string | undefined;
+        const fragileFilter = req.query.isFragile as string | undefined;
 
         const whereClause: any = { ownerId: userId };
-        if (statusFilter && ['PENDING', 'IN_TRANSIT', 'DELIVERED'].includes(statusFilter)) {
+        if (statusFilter && ['PENDING', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED'].includes(statusFilter)) {
             whereClause.status = statusFilter;
+        }
+        if (fragileFilter) {
+            whereClause.isFragile = fragileFilter === 'true';
         }
 
         const shipments = await prisma.shipment.findMany({
@@ -66,6 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
         });
       } catch (error) {
+        console.error(error);
         return res.status(500).json({ message: 'Error fetching shipments' });
       }
 

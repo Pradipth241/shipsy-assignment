@@ -25,19 +25,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     case 'GET':
       return res.status(200).json(shipment);
 
-    case 'PUT':
+    case 'PUT': // Update a shipment
       try {
-        const { description, isFragile, weightInKg, volumeCubicMeters, status } = req.body;
-        const shippingCost = (weightInKg * 1.5) + (volumeCubicMeters * 3);
+        const { destination, status, weightInKg, ratePerKg } = req.body;
+        // --- RE-CALCULATE COST ON UPDATE ---
+        const shippingCost = Number(weightInKg) * Number(ratePerKg);
 
         const updatedShipment = await prisma.shipment.update({
           where: { id: String(id) },
           data: {
-            description,
-            isFragile,
-            weightInKg,
-            volumeCubicMeters,
+            destination,
             status,
+            weightInKg: Number(weightInKg),
+            ratePerKg: Number(ratePerKg),
             shippingCost,
           },
         });
@@ -46,10 +46,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(500).json({ message: 'Error updating shipment' });
       }
 
-    case 'DELETE':
+    case 'DELETE': // Delete a shipment
       try {
         await prisma.shipment.delete({ where: { id: String(id) } });
-        return res.status(204).end(); // No content
+        return res.status(204).end(); // No Content
       } catch (error) {
         return res.status(500).json({ message: 'Error deleting shipment' });
       }
