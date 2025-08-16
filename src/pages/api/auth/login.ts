@@ -1,21 +1,38 @@
-// src/pages/api/auth/login.ts
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { readDB } from '@/lib/db';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+// src/lib/db.ts
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
-  const { username, password } = req.body;
+export interface TempUser {
+    id: string;
+    username: string;
+    password: string; // This was the fix
+}
 
-  const db = await readDB();
-  const user = db.users.find(u => u.username === username);
-  if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+export interface TempShipment {
+    id: string;
+    ownerId: string;
+    [key: string]: any;
+}
 
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) return res.status(401).json({ message: 'Invalid credentials' });
+interface DB {
+  users: TempUser[];
+  shipments: TempShipment[];
+}
 
-  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '1d' });
-  
-  res.status(200).json({ token });
+const dbPath = path.join(os.tmpdir(), 'db.json');
+
+export async function readDB(): Promise<DB> {
+  try {
+    const data = await fs.readFile(dbPath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    const defaultData = { users: [], shipments: [] };
+    await fs.writeFile(dbPath, JSON.stringify(defaultData, null, 2));
+    return defaultData;
+  }
+}
+
+export async function writeDB(data: DB): Promise<void> {
+  await fs.writeFile(dbPath, JSON.stringify(data, null, 2));
 }

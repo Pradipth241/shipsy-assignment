@@ -1,21 +1,33 @@
 // src/lib/db.ts
 import fs from 'fs/promises';
 import path from 'path';
+import os from 'os';
 
-// Vercel provides a temporary writable file system at /tmp
-const dbPath = path.join('/tmp', 'db.json');
+// Define the shape of our temporary data to satisfy TypeScript
+export interface TempUser {
+    id: string;
+    username: string;
+    password?: string;
+}
+
+export interface TempShipment {
+    id: string;
+    ownerId: string;
+    [key: string]: any; // Allows any other properties from the form
+}
 
 interface DB {
-  users: any[];
-  shipments: any[];
+  users: TempUser[];
+  shipments: TempShipment[];
 }
+
+const dbPath = path.join(os.tmpdir(), 'db.json');
 
 export async function readDB(): Promise<DB> {
   try {
     const data = await fs.readFile(dbPath, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
-    // If the file doesn't exist, create it with a default structure
     const defaultData = { users: [], shipments: [] };
     await fs.writeFile(dbPath, JSON.stringify(defaultData, null, 2));
     return defaultData;
