@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 // WARNING: THIS IS A TEMPORARY FIX FOR SUBMISSION ONLY.
 // In a real application, you should always use environment variables.
-const connectionString = "postgresql://postgres:PadduChinni@db.qygxhkjczlrnzkvewmlw.supabase.co:5432/postgres";
+const connectionString = "postgresql://postgres:PadduChinni@db.yisxslkmyiabxufwvjfz.supabase.co:5432/postgres";
 
 declare global {
   // eslint-disable-next-line no-var
