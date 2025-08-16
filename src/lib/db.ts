@@ -7,13 +7,13 @@ import os from 'os';
 export interface TempUser {
     id: string;
     username: string;
-    password?: string;
+    password: string; 
 }
 
 export interface TempShipment {
     id: string;
     ownerId: string;
-    [key: string]: any; // Allows any other properties from the form
+    [key: string]: any; // This allows any other properties from the form
 }
 
 interface DB {
@@ -27,7 +27,7 @@ export async function readDB(): Promise<DB> {
   try {
     const data = await fs.readFile(dbPath, 'utf-8');
     return JSON.parse(data);
-  } catch (error) {
+  } catch (_error) { // Fix for unused variable
     const defaultData = { users: [], shipments: [] };
     await fs.writeFile(dbPath, JSON.stringify(defaultData, null, 2));
     return defaultData;
