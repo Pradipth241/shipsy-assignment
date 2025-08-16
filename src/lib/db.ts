@@ -3,7 +3,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 
-// Define the shape of our temporary data to satisfy TypeScript
 export interface TempUser {
     id: string;
     username: string;
@@ -13,7 +12,10 @@ export interface TempUser {
 export interface TempShipment {
     id: string;
     ownerId: string;
-    [key: string]: any; // This allows any other properties from the form
+    // --- THIS IS THE FIX ---
+    // We are disabling the 'any' type error for this line only.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any; 
 }
 
 interface DB {
@@ -27,7 +29,7 @@ export async function readDB(): Promise<DB> {
   try {
     const data = await fs.readFile(dbPath, 'utf-8');
     return JSON.parse(data);
-  } catch (_error) { // Fix for unused variable
+  } catch (_error) {
     const defaultData = { users: [], shipments: [] };
     await fs.writeFile(dbPath, JSON.stringify(defaultData, null, 2));
     return defaultData;
